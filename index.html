@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="id" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SalesPulse Analytics Dashboard</title>
+    <meta
+      name="description"
+      content="Dashboard analitik penjualan interaktif berbasis HTML, Tailwind CSS, Vanilla JavaScript, Chart.js, dan data JSON."
+    />
+    <meta property="og:title" content="SalesPulse Analytics Dashboard" />
+    <meta
+      property="og:description"
+      content="Dashboard analitik penjualan interaktif berbasis HTML, Tailwind CSS, Vanilla JavaScript, Chart.js, dan data JSON."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Plus Jakarta Sans (UI & Headings) + JetBrains Mono (Tabular Metrics) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Stylesheet utama (Tailwind CSS v4 + styling tambahan) -->
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
+    <!-- Header Navigasi Utama (3-Zone Top Bar) -->
+    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
+      <div class="mx-auto flex max-w-[1360px] items-center justify-between gap-4 px-4 py-3.5 sm:gap-8 sm:px-6 lg:px-8">
+        <!-- Zona 1: Brand Wordmark -->
+        <a
+          href="#overview"
+          class="shrink-0 whitespace-nowrap text-lg font-bold tracking-tight text-slate-900 transition-colors hover:text-blue-600"
+        >
+          SalesPulse Analytics
+        </a>
+
+        <!-- Zona 2: Navigasi Seksi -->
+        <nav aria-label="Navigasi Dashboard" class="hidden items-center gap-6 md:flex">
+          <a
+            href="#overview"
+            class="shrink-0 whitespace-nowrap text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+          >
+            Ringkasan
+          </a>
+          <a
+            href="#trends"
+            class="shrink-0 whitespace-nowrap text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+          >
+            Tren &amp; Wilayah
+          </a>
+          <a
+            href="#distribution"
+            class="shrink-0 whitespace-nowrap text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+          >
+            Distribusi
+          </a>
+          <a
+            href="#top-sales"
+            class="shrink-0 whitespace-nowrap text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+          >
+            Top Transaksi
+          </a>
+        </nav>
+
+        <!-- Zona 3: Aksi Utama -->
+        <div class="flex shrink-0 items-center">
+          <button
+            id="export-csv-btn"
+            type="button"
+            class="inline-flex min-h-[40px] shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-all duration-200 hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+          >
+            <svg
+              aria-hidden="true"
+              class="h-4 w-4 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3"
+              />
+            </svg>
+            <span>Unduh CSV</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Konten Utama Dashboard -->
+    <main class="mx-auto max-w-[1360px] space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8 lg:px-8">
+      <!-- Bagian Judul & Filter Dinamis -->
+      <section id="overview" aria-labelledby="dashboard-title" class="space-y-5">
+        <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <div class="space-y-1">
+            <h1
+              id="dashboard-title"
+              class="text-balance text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
+            >
+              Dashboard Analitik Penjualan
+            </h1>
+            <p class="text-sm text-slate-600">
+              Visualisasi performa penjualan berdasarkan wilayah, kategori produk, pelanggan, dan saluran transaksi.
+            </p>
+          </div>
+
+          <p
+            id="record-summary"
+            aria-live="polite"
+            class="font-mono text-xs font-medium text-slate-600 tabular-nums sm:text-sm"
+          >
+            Memuat data transaksi...
+          </p>
+        </div>
+
+        <!-- Panel Filter Interaktif -->
+        <div
+          class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs transition-shadow duration-200 hover:shadow-sm sm:p-5"
+        >
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+            <!-- Filter Region -->
+            <div class="space-y-1.5">
+              <label for="filter-region" class="block text-xs font-semibold text-slate-700">
+                Region
+              </label>
+              <select
+                id="filter-region"
+                name="region"
+                class="filter-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+              >
+                <option value="All">Semua Region</option>
+              </select>
+            </div>
+
+            <!-- Filter Product Category -->
+            <div class="space-y-1.5">
+              <label for="filter-category" class="block text-xs font-semibold text-slate-700">
+                Product Category
+              </label>
+              <select
+                id="filter-category"
+                name="category"
+                class="filter-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+              >
+                <option value="All">Semua Kategori</option>
+              </select>
+            </div>
+
+            <!-- Filter Customer Type -->
+            <div class="space-y-1.5">
+              <label for="filter-customer" class="block text-xs font-semibold text-slate-700">
+                Customer Type
+              </label>
+              <select
+                id="filter-customer"
+                name="customerType"
+                class="filter-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+              >
+                <option value="All">Semua Tipe Pelanggan</option>
+              </select>
+            </div>
+
+            <!-- Filter Sales Channel -->
+            <div class="space-y-1.5">
+              <label for="filter-channel" class="block text-xs font-semibold text-slate-700">
+                Sales Channel
+              </label>
+              <select
+                id="filter-channel"
+                name="salesChannel"
+                class="filter-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+              >
+                <option value="All">Semua Saluran</option>
+              </select>
+            </div>
+
+            <!-- Tombol Reset Filter -->
+            <div>
+              <button
+                id="reset-filters-btn"
+                type="button"
+                class="inline-flex min-h-[42px] w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="h-4 w-4 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                <span>Reset Filter</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Status Loading / Error -->
+      <section
+        id="status-banner"
+        aria-live="polite"
+        class="hidden rounded-xl border border-slate-200 bg-white p-8 text-center shadow-xs"
+      >
+        <p id="status-message" class="text-sm font-medium text-slate-700"></p>
+        <button
+          id="status-action-btn"
+          type="button"
+          class="mt-4 hidden min-h-[40px] rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+        >
+          Muat Ulang Data
+        </button>
+      </section>
+
+      <!-- Kartu KPI Utama (4 Metrik Inti) -->
+      <section aria-label="Indikator Kinerja Utama" class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
+        <!-- KPI 1: Total Revenue -->
+        <article
+          class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-xs font-semibold tracking-wide text-slate-500">Total Revenue</h2>
+            <span class="text-xs font-medium text-blue-600">Pendapatan</span>
+          </div>
+          <p
+            id="kpi-revenue"
+            class="mt-3 font-mono text-2xl font-semibold tracking-tight text-slate-900 tabular-nums sm:text-[1.75rem]"
+          >
+            $0.00
+          </p>
+          <p id="kpi-revenue-sub" class="mt-2 text-xs text-slate-500 tabular-nums">
+            Rata-rata $0.00 / transaksi
+          </p>
+        </article>
+
+        <!-- KPI 2: Total Transactions -->
+        <article
+          class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-xs font-semibold tracking-wide text-slate-500">Total Transactions</h2>
+            <span class="text-xs font-medium text-indigo-600">Transaksi</span>
+          </div>
+          <p
+            id="kpi-transactions"
+            class="mt-3 font-mono text-2xl font-semibold tracking-tight text-slate-900 tabular-nums sm:text-[1.75rem]"
+          >
+            0
+          </p>
+          <p id="kpi-transactions-sub" class="mt-2 text-xs text-slate-500 tabular-nums">
+            Dari 0 total catatan penjualan
+          </p>
+        </article>
+
+        <!-- KPI 3: Total Quantity Sold -->
+        <article
+          class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-xs font-semibold tracking-wide text-slate-500">Total Quantity Sold</h2>
+            <span class="text-xs font-medium text-teal-600">Unit Terjual</span>
+          </div>
+          <p
+            id="kpi-quantity"
+            class="mt-3 font-mono text-2xl font-semibold tracking-tight text-slate-900 tabular-nums sm:text-[1.75rem]"
+          >
+            0
+          </p>
+          <p id="kpi-quantity-sub" class="mt-2 text-xs text-slate-500 tabular-nums">
+            Rata-rata 0.0 unit / order
+          </p>
+        </article>
+
+        <!-- KPI 4: Average Discount -->
+        <article
+          class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-xs font-semibold tracking-wide text-slate-500">Average Discount</h2>
+            <span class="text-xs font-medium text-amber-600">Rata-rata Diskon</span>
+          </div>
+          <p
+            id="kpi-discount"
+            class="mt-3 font-mono text-2xl font-semibold tracking-tight text-slate-900 tabular-nums sm:text-[1.75rem]"
+          >
+            0.00%
+          </p>
+          <p id="kpi-discount-sub" class="mt-2 text-xs text-slate-500 tabular-nums">
+            Rentang diskon 0% – 0%
+          </p>
+        </article>
+      </section>
+
+      <!-- Status Kosong Jika Kombinasi Filter Tidak Memiliki Data -->
+      <section
+        id="empty-state"
+        class="hidden rounded-xl border border-slate-200 bg-white p-10 text-center shadow-xs"
+      >
+        <h2 class="text-lg font-semibold text-slate-900">Tidak ada transaksi yang cocok</h2>
+        <p class="mt-1.5 text-sm text-slate-600">
+          Kombinasi filter yang dipilih tidak menghasilkan data penjualan. Atur ulang filter untuk melihat seluruh data.
+        </p>
+        <button
+          id="empty-reset-btn"
+          type="button"
+          class="mt-5 inline-flex min-h-[40px] items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+        >
+          Reset Semua Filter
+        </button>
+      </section>
+
+      <!-- Kontainer Visualisasi Grafik & Tabel -->
+      <div id="charts-container" class="space-y-6">
+        <!-- Baris 1: Sales Trend & Revenue per Region -->
+        <section id="trends" aria-label="Tren Penjualan dan Kinerja Wilayah" class="grid grid-cols-1 gap-5 lg:grid-cols-12">
+          <!-- Chart 1: Sales Trend -->
+          <article
+            class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:shadow-md lg:col-span-8"
+          >
+            <header class="mb-4 flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
+              <div>
+                <h2 class="text-base font-semibold text-slate-900">Sales Trend</h2>
+                <p class="text-xs text-slate-500">Perkembangan total pendapatan bulanan sepanjang tahun</p>
+              </div>
+              <span class="text-xs font-medium text-slate-500">Bulanan (USD)</span>
+            </header>
+            <div class="chart-wrapper relative h-72 w-full sm:h-80">
+              <canvas id="chart-sales-trend" data-testid="chart-sales-trend" aria-label="Grafik Sales Trend"></canvas>
+            </div>
+          </article>
+
+          <!-- Chart 2: Revenue per Region -->
+          <article
+            class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:shadow-md lg:col-span-4"
+          >
+            <header class="mb-4 flex items-center justify-between gap-2">
+              <div>
+                <h2 class="text-base font-semibold text-slate-900">Revenue per Region</h2>
+                <p class="text-xs text-slate-500">Perbandingan pendapatan per wilayah</p>
+              </div>
+            </header>
+            <div class="chart-wrapper relative h-72 w-full sm:h-80">
+              <canvas id="chart-revenue-region" data-testid="chart-revenue-region" aria-label="Grafik Revenue per Region"></canvas>
+            </div>
+          </article>
+        </section>
+
+        <!-- Baris 2: Category Revenue, Quantity per Category, & Sales Representative -->
+        <section aria-label="Kinerja Kategori dan Perwakilan Penjualan" class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <!-- Chart 3: Revenue per Product Category -->
+          <article
+            class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:shadow-md"
+          >
+            <header class="mb-4">
+              <h2 class="text-base font-semibold text-slate-900">Revenue per Product Category</h2>
+              <p class="text-xs text-slate-500">Kontribusi pendapatan tiap kategori produk</p>
+            </header>
+            <div class="chart-wrapper relative h-64 w-full sm:h-72">
+              <canvas id="chart-revenue-category" data-testid="chart-revenue-category" aria-label="Grafik Revenue per Product Category"></canvas>
+            </div>
+          </article>
+
+          <!-- Chart 4: Quantity Sold per Category -->
+          <article
+            class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:shadow-md"
+          >
+            <header class="mb-4">
+              <h2 class="text-base font-semibold text-slate-900">Quantity Sold per Category</h2>
+              <p class="text-xs text-slate-500">Total unit terjual untuk setiap kategori</p>
+            </header>
+            <div class="chart-wrapper relative h-64 w-full sm:h-72">
+              <canvas id="chart-quantity-category" data-testid="chart-quantity-category" aria-label="Grafik Quantity Sold per Category"></canvas>
+            </div>
+          </article>
+
+          <!-- Chart 5: Sales per Sales Representative -->
+          <article
+            class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:shadow-md md:col-span-2 xl:col-span-1"
+          >
+            <header class="mb-4">
+              <h2 class="text-base font-semibold text-slate-900">Sales per Sales Representative</h2>
+              <p class="text-xs text-slate-500">Peringkat total penjualan per sales rep</p>
+            </header>
+            <div class="chart-wrapper relative h-64 w-full sm:h-72">
+              <canvas id="chart-sales-rep" data-testid="chart-sales-rep" aria-label="Grafik Sales per Sales Representative"></canvas>
+            </div>
+          </article>
+        </section>
+
+        <!-- Baris 3: Customer Type, Payment Method, & Sales Channel Distributions -->
+        <section id="distribution" aria-label="Distribusi Pelanggan, Pembayaran, dan Saluran" class="grid grid-cols-1 gap-5 md:grid-cols-3">
+          <!-- Chart 6: Customer Type Distribution -->
+          <article
+            class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:shadow-md"
+          >
+            <header class="mb-4">
+              <h2 class="text-base font-semibold text-slate-900">Customer Type Distribution</h2>
+              <p class="text-xs text-slate-500">Proporsi transaksi pelanggan baru vs kembali</p>
+            </header>
+            <div class="chart-wrapper relative h-64 w-full">
+              <canvas id="chart-customer-type" data-testid="chart-customer-type" aria-label="Grafik Customer Type Distribution"></canvas>
+            </div>
+          </article>
+
+          <!-- Chart 7: Payment Method Usage -->
+          <article
+            class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:shadow-md"
+          >
+            <header class="mb-4">
+              <h2 class="text-base font-semibold text-slate-900">Payment Method Usage</h2>
+              <p class="text-xs text-slate-500">Frekuensi penggunaan metode pembayaran</p>
+            </header>
+            <div class="chart-wrapper relative h-64 w-full">
+              <canvas id="chart-payment-method" data-testid="chart-payment-method" aria-label="Grafik Payment Method Usage"></canvas>
+            </div>
+          </article>
+
+          <!-- Chart 8: Sales Channel Distribution -->
+          <article
+            class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:shadow-md"
+          >
+            <header class="mb-4">
+              <h2 class="text-base font-semibold text-slate-900">Sales Channel Distribution</h2>
+              <p class="text-xs text-slate-500">Komposisi transaksi saluran Online vs Retail</p>
+            </header>
+            <div class="chart-wrapper relative h-64 w-full">
+              <canvas id="chart-sales-channel" data-testid="chart-sales-channel" aria-label="Grafik Sales Channel Distribution"></canvas>
+            </div>
+          </article>
+        </section>
+
+        <!-- Baris 4: Discount vs Sales (Scatter) & Top 10 Highest Sales -->
+        <section id="top-sales" aria-label="Korelasi Diskon dan Transaksi Tertinggi" class="grid grid-cols-1 gap-5 lg:grid-cols-12">
+          <!-- Chart 9: Discount vs Sales (Scatter Plot) -->
+          <article
+            class="dashboard-card rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:shadow-md lg:col-span-5"
+          >
+            <header class="mb-4">
+              <h2 class="text-base font-semibold text-slate-900">Discount vs Sales</h2>
+              <p class="text-xs text-slate-500">Sebaran nilai diskon (%) terhadap nominal penjualan</p>
+            </header>
+            <div class="chart-wrapper relative h-80 w-full sm:h-96">
+              <canvas id="chart-discount-scatter" data-testid="chart-discount-scatter" aria-label="Grafik Scatter Discount vs Sales"></canvas>
+            </div>
+          </article>
+
+          <!-- Chart/Visualisasi 10: Top 10 Highest Sales -->
+          <article
+            class="dashboard-card flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:shadow-md lg:col-span-7"
+          >
+            <header class="mb-4 flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
+              <div>
+                <h2 class="text-base font-semibold text-slate-900">Top 10 Highest Sales</h2>
+                <p class="text-xs text-slate-500">10 transaksi dengan nilai penjualan terbesar pada filter aktif</p>
+              </div>
+              <span class="font-mono text-xs text-slate-500 tabular-nums">Urut berdasarkan Revenue</span>
+            </header>
+
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[620px] border-collapse text-left text-sm">
+                <thead>
+                  <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500">
+                    <th scope="col" class="py-2.5 pr-3">#</th>
+                    <th scope="col" class="px-3 py-2.5">Product ID</th>
+                    <th scope="col" class="px-3 py-2.5">Tanggal</th>
+                    <th scope="col" class="px-3 py-2.5">Sales Rep</th>
+                    <th scope="col" class="px-3 py-2.5">Region</th>
+                    <th scope="col" class="px-3 py-2.5">Kategori</th>
+                    <th scope="col" class="px-3 py-2.5 text-right">Qty</th>
+                    <th scope="col" class="px-3 py-2.5 text-right">Diskon</th>
+                    <th scope="col" class="py-2.5 pl-3 text-right">Sales Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="top-sales-tbody" class="divide-y divide-slate-100 text-slate-700">
+                  <!-- Baris diisi secara dinamis oleh script.js -->
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <!-- Footer Sederhana -->
+    <footer class="border-t border-slate-200 bg-white">
+      <div class="mx-auto flex max-w-[1360px] flex-col items-start justify-between gap-2 px-4 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:px-6 lg:px-8">
+        <p>SalesPulse Analytics · Sumber data JSON dari laporan transaksi penjualan</p>
+        <p class="tabular-nums">Periode data: Januari – Desember 2023</p>
+      </div>
+    </footer>
+
+    <!-- Logika Dashboard Vanilla JavaScript -->
+    <script type="module" src="/script.js"></script>
+  </body>
+</html>

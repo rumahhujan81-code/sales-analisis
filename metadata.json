@@ -1,0 +1,6 @@
+{
+  "name": "SalesPulse Analytics Dashboard",
+  "description": "Dashboard analitik penjualan interaktif berbasis HTML, Tailwind CSS, Vanilla JavaScript, Chart.js, dan data JSON.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
